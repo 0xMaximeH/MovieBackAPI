@@ -1,4 +1,4 @@
-namespace MovieBackAPI
+namespace MovieBackAPI.Models
 {
     public class WeatherForecast
     {
