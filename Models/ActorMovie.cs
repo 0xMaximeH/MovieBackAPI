@@ -14,9 +14,9 @@ namespace MovieBackAPI.Models
         [Key, ForeignKey("Movie"), Column(Order = 1)]
         public int MovieId { get; set; }
 
-        public Actor Actor { get; set; }
+        public Actor? Actor { get; set; }
 
-        public Movie Movie { get; set; }
+        public Movie? Movie { get; set; }
 
         public string? Role { get; set; }
     }
