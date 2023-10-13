@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MovieBackAPI.Models;
 
 namespace MovieBackAPI.Controllers
@@ -14,34 +15,72 @@ namespace MovieBackAPI.Controllers
             this.dbContext = context;
         }
 
+        /// <summary>
+        /// Returns the list of directors (Id, Name)
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
             var directors = dbContext.Directors.ToList();
-            return Ok(directors);
+
+            var directorsDTO = new List<AllDirectorDTO>();
+
+            foreach (var director in directors)
+            {
+                directorsDTO.Add(new AllDirectorDTO()
+                {
+                    Id = director.Id,
+                    Name = director.Name
+                });
+            }
+
+            return Ok(directorsDTO);
         }
 
+        /// <summary>
+        /// Get the detail of one director and his movies (Id, Name, Biography, DateOfBirth, MoviesID, Movies Name )
+        /// </summary>
+        /// <param name="id">Id of the movie</param>
         [HttpGet]
         [Route("{id:int}")]
         public IActionResult GetById([FromRoute] int id)
         {
-            var director = dbContext.Directors.Find(id);
+            var director = dbContext.Directors
+                .Include(director => director.DirectedMovies)
+                .FirstOrDefault(director => director.Id == id);
 
-            if(director == null) {
+            if (director == null) {
                 return NotFound(); 
             }
+            var directorDto = new DetailDirectorDTO();
 
-            return Ok(director);
+            directorDto.Id = id;
+            directorDto.Name = director.Name;
+            directorDto.DateOfBirth = director.DateOfBirth;
+            directorDto.Biography = director.Biography;
+
+            directorDto.Movies = new List<DirectedMovieDTO>();
+
+            foreach(Movie movie in director.DirectedMovies)
+            {
+                directorDto.Movies.Add(new DirectedMovieDTO()
+                {
+                    MovieId = movie.Id,
+                    MovieName = movie.Title
+                });
+            }
+
+            return Ok(directorDto);
         }
 
         [HttpPost(Name = "AddDirector")]
-        public IActionResult Create([FromBody] Director director)
+        public IActionResult Create([FromBody] AddDirectorDTO director)
         {
             var newDirector = new Director
             {
                 Biography = director.Biography,
-                DateOfBirth = DateTime.Now,
-                Name = director.Name  
+                DateOfBirth = director.DateOfBirth,
+                Name = director.Name
             };
             
             dbContext.Directors.Add(newDirector);
@@ -51,7 +90,7 @@ namespace MovieBackAPI.Controllers
         }
 
         [HttpPut(Name = "UpdateDirector")]
-        public IActionResult Update([FromBody] Director director)
+        public IActionResult Update([FromBody] UpdateDirectorDTO director)
         {
             var updatedDirector = dbContext.Directors.Find(director.Id);
 
@@ -60,7 +99,7 @@ namespace MovieBackAPI.Controllers
             }
 
             updatedDirector.Biography = director.Biography;
-            updatedDirector.DateOfBirth = DateTime.Now;
+            updatedDirector.DateOfBirth = director.DateOfBirth;
             updatedDirector.Name = director.Name;
 
             dbContext.Directors.Update(updatedDirector);
@@ -81,7 +120,7 @@ namespace MovieBackAPI.Controllers
             dbContext.Directors.Remove(director);
             dbContext.SaveChanges();
 
-            return Ok();
+            return Ok($"The director (id: {id}) has been deleted.");
         }
     }
 }
