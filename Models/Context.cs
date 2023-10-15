@@ -16,4 +16,8 @@ public class Context : DbContext
 
     public DbSet<Director> Directors { get; set; }
 
+    public DbSet<User> Users { get; set; }
+
+    public DbSet<Review> Reviews { get; set; }
+
 }

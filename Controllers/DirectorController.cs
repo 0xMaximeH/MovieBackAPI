@@ -5,7 +5,7 @@ using MovieBackAPI.Models;
 namespace MovieBackAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     public class DirectorController : ControllerBase
     {
         private readonly Context dbContext;
@@ -40,7 +40,7 @@ namespace MovieBackAPI.Controllers
         /// <summary>
         /// Get the detail of one director and his movies (Id, Name, Biography, DateOfBirth, MoviesID, Movies Name )
         /// </summary>
-        /// <param name="id">Id of the movie</param>
+        /// <param name="id">Id of the director</param>
         [HttpGet]
         [Route("{id:int}")]
         public IActionResult GetById([FromRoute] int id)

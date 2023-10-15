@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MovieBackAPI.Models;
 
 namespace MovieBackAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     public class ActorMovieController : ControllerBase
     {
         private readonly Context dbContext;
@@ -18,6 +17,7 @@ namespace MovieBackAPI.Controllers
         [HttpPost(Name = "AddRole")]
         public IActionResult Create([FromBody] AddActorMovieDTO role)
         {
+            if (!ModelState.IsValid) return Ok();
             var actormovie = new ActorMovie
             {
                 MovieId = role.MovieId,

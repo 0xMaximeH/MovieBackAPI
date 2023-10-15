@@ -6,7 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace MovieBackAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     public class MovieController : ControllerBase
     {
         private readonly Context dbContext;
@@ -84,7 +84,10 @@ namespace MovieBackAPI.Controllers
         public IActionResult Create([FromBody] AddMovieDTO movie)
         {
 
-            //not handled error : director cannot be null / not exist
+            var director = dbContext.Directors.Find(movie.DirectorId);
+            if (director == null)
+                return BadRequest("This director does not exist");
+
             var newMovie = new Movie
             {
                 Title = movie.Title,
@@ -95,18 +98,6 @@ namespace MovieBackAPI.Controllers
 
             };
 
-            //not handled error : actor id in parameter must exist
-            foreach (ActorInMovieDTO actor in movie.Actors)
-            {
-                var newActorMovie = new ActorMovie
-                {
-                    MovieId = newMovie.Id,
-                    ActorId = actor.Id,
-                    Role = actor.Role
-                };
-                newMovie.Actors.Add(newActorMovie);
-            }
-
             dbContext.Movies.Add(newMovie);            
             
             dbContext.SaveChanges();
@@ -115,11 +106,9 @@ namespace MovieBackAPI.Controllers
         }
 
         [HttpPut]
-        public IActionResult UpdateMovie([FromBody] UpdateMovieDTO movie)
+        public IActionResult Update([FromBody] UpdateMovieDTO movie)
         {
-            var updatedMovie = dbContext.Movies
-                .Include(mov => mov.Actors)
-                .FirstOrDefault(mov => mov.Id == movie.Id);
+            var updatedMovie = dbContext.Movies.Find(movie.Id);
 
             if (updatedMovie == null) {
                 return NotFound($"No movie found for this id : {movie.Id}");
@@ -131,20 +120,6 @@ namespace MovieBackAPI.Controllers
             updatedMovie.RealeaseYear = movie.RealeaseYear;
             updatedMovie.Rating = movie.Rating;
 
-            foreach (ActorInMovieDTO actor in movie.Actors)
-            {
-                var actorInMovie = updatedMovie.Actors.FirstOrDefault(x => x.ActorId == actor.Id);
-                if(actorInMovie == null)
-                {
-                    updatedMovie.Actors.Add(new ActorMovie
-                    {
-                        MovieId = movie.Id,
-                        ActorId = actor.Id,
-                        Role = actor.Role
-                    });
-                }
-            }
-
             dbContext.Movies.Update(updatedMovie);
             dbContext.SaveChanges();
 
@@ -152,7 +127,7 @@ namespace MovieBackAPI.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        public IActionResult DeleteMovie([FromRoute] int id)
+        public IActionResult Delete([FromRoute] int id)
         {
             var movie = dbContext.Movies.Find(id);
 

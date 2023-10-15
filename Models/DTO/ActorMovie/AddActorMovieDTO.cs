@@ -10,6 +10,6 @@ namespace MovieBackAPI.Models
         [Required]
         public int ActorId { get; set; }
 
-        public string Role { get; set; }
+        public string? Role { get; set; }
     }
 }

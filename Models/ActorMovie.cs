@@ -8,9 +8,11 @@ namespace MovieBackAPI.Models
 
     public class ActorMovie
     {
+        [Required]
         [Key, ForeignKey("Actor"), Column(Order = 0)]
         public int ActorId { get; set; }
 
+        [Required]
         [Key, ForeignKey("Movie"), Column(Order = 1)]
         public int MovieId { get; set; }
 

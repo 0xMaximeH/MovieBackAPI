@@ -5,7 +5,7 @@ using MovieBackAPI.Models;
 namespace MovieBackAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     public class ActorController : ControllerBase
     {
         private readonly Context dbContext;
@@ -42,7 +42,7 @@ namespace MovieBackAPI.Controllers
         /// <summary>
         /// Get the detail of one actor and the movies he played in (Id, Name, Biography, DateOfBirth, MoviesID, MoviesName, ActorRole )
         /// </summary>
-        /// <param name="id">Id of the movie</param>
+        /// <param name="id">Id of the the actor</param>
         [HttpGet]
         [Route("{id:int}")]
         public IActionResult GetById([FromRoute] int id)
@@ -92,16 +92,6 @@ namespace MovieBackAPI.Controllers
                 Name = actor.Name  
             };
 
-            foreach(RoleInMovieDTO actedMovie in actor.Movies)
-            {
-                newActor.ActedMovies.Add(new ActorMovie()
-                {
-                    ActorId = newActor.Id,
-                    MovieId = actedMovie.MovieId,
-                    Role = actedMovie.Role
-                });
-            }
-
             dbContext.Actors.Add(newActor);
             dbContext.SaveChanges();
 
@@ -122,22 +112,6 @@ namespace MovieBackAPI.Controllers
             updatedActor.Biography = actor.Biography;
             updatedActor.DateOfBirth = actor.DateOfBirth;
             updatedActor.Name = actor.Name;
-
-            foreach (ActorMovieDTO actedMovie in actor.Movies)
-            {
-                // Check
-                var actorInMovie = updatedActor.ActedMovies.FirstOrDefault(x => x.MovieId == actedMovie.MovieId);
-
-                if (actorInMovie == null)
-                {
-                    updatedActor.ActedMovies.Add(new ActorMovie()
-                    {
-                        ActorId = actor.Id,
-                        MovieId = actedMovie.MovieId,
-                        Role = actedMovie.Role
-                    });
-                }                
-            }
 
             dbContext.Actors.Update(updatedActor);
             dbContext.SaveChanges();
