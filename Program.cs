@@ -58,7 +58,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false
         };
     });
-
+ 
 
 // Database connection
 builder.Services.AddDbContext<Context>(options =>

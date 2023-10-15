@@ -29,6 +29,12 @@ namespace MovieBackAPI.Controllers
         {
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
+            var userFound = dbContext.Users.FirstOrDefault(x => x.Name == user.UserName);
+            if (userFound != null)
+            {
+                return BadRequest("User already exist for this name.");
+            }
+
             var newUser = new User
             {
                 Name = user.UserName,

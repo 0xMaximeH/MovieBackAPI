@@ -132,7 +132,7 @@ namespace MovieBackAPI.Controllers
 
             dbContext.SaveChanges();
 
-            return Ok(connectedUser.Following);
+            return Ok();
         }
     }
 }
