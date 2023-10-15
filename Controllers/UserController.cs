@@ -124,8 +124,15 @@ namespace MovieBackAPI.Controllers
 
             if (followingUser == null)
             {
-                return NotFound("Imposible de suivre un utilisateur qui n'existe pas");
+                return NotFound("Imposible de suivre un utilisateur qui n'existe pas.");
             }
+
+            var alreadyExist = followingUser.Followers.FirstOrDefault(u => u.Id == connectedUserId);
+            if (alreadyExist != null)
+            {
+                return NotFound("Imposible de suivre deux fois le meme utilisateur.");
+            }
+            
 
             connectedUser.Following.Add(followingUser);
             followingUser.Followers.Add(connectedUser);
