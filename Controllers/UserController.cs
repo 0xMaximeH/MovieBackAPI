@@ -11,6 +11,7 @@ namespace MovieBackAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly Context dbContext;
+        private readonly int pageResult = 1;
 
         public UserController(Context context)
         {
@@ -19,11 +20,13 @@ namespace MovieBackAPI.Controllers
 
         
         /// <summary>
-        /// Returns the list of users (id, name, review count)
+        /// Returns 5 users per page (id, name, review count)
         /// </summary>
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(int page)
         {
+            page = page > 0 ? page : 1;
+
             var users = dbContext.Users
                 .Select(u => new AllUserDTO
                 {
@@ -31,13 +34,15 @@ namespace MovieBackAPI.Controllers
                     Name = u.Name,
                     ReviewCount = u.Reviews.Count()
                 })
+                .Skip((page-1) * pageResult)
+                .Take(pageResult)
                 .ToList();
             
             return Ok(users);
         }
 
         /// <summary>
-        /// Get the detail of one user (Id, Name, Favorites Movies, Reviews, Followers and following count)
+        /// Get the detail of one user (Id, Name, Favorites Movies, Last Reviews, Followers and following count)
         /// </summary>
         /// <param name="id">Id of the user</param>
         [HttpGet]
@@ -49,7 +54,7 @@ namespace MovieBackAPI.Controllers
                 {
                     Id = u.Id,
                     Name = u.Name,
-                    Reviews = u.Reviews,
+                    Reviews = u.Reviews.Take(4).ToList(),
                     FavoriteMovies = u.FavoriteMovies,
                     FollowersCount = u.Followers.Count(),
                     FollowingCount = u.Following.Count()
