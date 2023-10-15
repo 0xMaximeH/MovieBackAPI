@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using MovieBackAPI.Models;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace MovieBackAPI.Controllers
 {
@@ -17,12 +17,31 @@ namespace MovieBackAPI.Controllers
         }
 
         /// <summary>
-        /// Returns the list of movies (Id, Title, RealeaseYear, Rating)
+        /// Returns the list of 10 movies (Id, Title, RealeaseYear, Rating). Order by name, date, rate.
         /// </summary>
         [HttpGet]        
-        public IActionResult GetAll()
+        public IActionResult GetAll(int page, string orderBy)
         {
-            var movies = dbContext.Movies.ToList();
+            page = page > 0 ? page : 1;
+            int pageResult = 10;
+
+            var movies = dbContext.Movies
+                .Skip((page - 1) * pageResult)
+                .Take(pageResult)
+                .ToList();
+
+            switch (orderBy)
+            {
+                case "name":
+                    movies = movies.OrderBy(m => m.Title).ToList();
+                    break;
+                case "date":
+                    movies = movies.OrderBy(m => m.RealeaseYear).ToList();
+                    break;
+                default:
+                    break;
+            }
+
             var moviesDTO = new List<AllMovieDTO>();
             foreach (var movie in movies)
             {
@@ -52,7 +71,7 @@ namespace MovieBackAPI.Controllers
                 .FirstOrDefault(movie => movie.Id == id);
 
             if(movie  == null) {
-                return NotFound($"No movie found for this id : {id}."); 
+                return NotFound("No movie found for this id."); 
             }
 
             var detailMovieDTO = new DetailMovieDTO();
@@ -80,13 +99,16 @@ namespace MovieBackAPI.Controllers
             return Ok(detailMovieDTO);
         }
 
+        /// <summary>
+        /// Create a movie with a Title, ReleaseYear, Description, Rating, DirectorId
+        /// </summary>
         [HttpPost(Name = "AddMovie")]
         public IActionResult Create([FromBody] AddMovieDTO movie)
         {
 
             var director = dbContext.Directors.Find(movie.DirectorId);
             if (director == null)
-                return BadRequest("This director does not exist");
+                return BadRequest("The director for this id does not exist");
 
             var newMovie = new Movie
             {
@@ -102,9 +124,12 @@ namespace MovieBackAPI.Controllers
             
             dbContext.SaveChanges();
 
-            return CreatedAtAction(nameof(GetById), new { id = newMovie.Id }, newMovie);
+            return CreatedAtAction(nameof(GetById), new { id = newMovie.Id }, movie);
         }
 
+        /// <summary>
+        /// Update a movie with a Title, ReleaseYear, Description, Rating, DirectorId
+        /// </summary>
         [HttpPut]
         public IActionResult Update([FromBody] UpdateMovieDTO movie)
         {
@@ -113,6 +138,10 @@ namespace MovieBackAPI.Controllers
             if (updatedMovie == null) {
                 return NotFound($"No movie found for this id : {movie.Id}");
             }
+
+            var director = dbContext.Directors.Find(movie.DirectorId);
+            if (director == null)
+                return BadRequest("The director for this id does not exist");
 
             updatedMovie.Title = movie.Title;
             updatedMovie.DirectorId = movie.DirectorId;
@@ -123,9 +152,13 @@ namespace MovieBackAPI.Controllers
             dbContext.Movies.Update(updatedMovie);
             dbContext.SaveChanges();
 
-            return CreatedAtAction(nameof(GetById), new { id = updatedMovie.Id }, updatedMovie);
+            return CreatedAtAction(nameof(GetById), new { id = updatedMovie.Id }, movie);
         }
 
+        /// <summary>
+        /// Delete an movie
+        /// </summary>
+        /// <param name="id">Id of the the movie</param>
         [HttpDelete("{id:int}")]
         public IActionResult Delete([FromRoute] int id)
         {

@@ -12,8 +12,11 @@ namespace MovieBackAPI.Controllers
         public ActorMovieController(Context context)
         {
             this.dbContext = context;
-        }        
+        }
 
+        /// <summary>
+        /// Make a actor play in a movie with a role
+        /// </summary>
         [HttpPost(Name = "AddRole")]
         public IActionResult Create([FromBody] AddActorMovieDTO role)
         {
@@ -32,6 +35,9 @@ namespace MovieBackAPI.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Delete the role of an actor in a movie
+        /// </summary>
         [HttpDelete]
         public IActionResult Delete([FromBody] DeleteActorMovieDTO role)
         {
@@ -39,7 +45,7 @@ namespace MovieBackAPI.Controllers
                 .FirstOrDefault(x => x.MovieId == role.MovieId && x.ActorId == role.ActorId);
 
             if (actorMovie == null) {
-                return NotFound($"No role found for these ids.");
+                return NotFound("No role found for these ids.");
             }
 
             dbContext.ActorsMovies.Remove(actorMovie);

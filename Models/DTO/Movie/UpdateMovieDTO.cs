@@ -14,7 +14,5 @@ namespace MovieBackAPI.Models
 
         public int DirectorId { get; set; }
 
-        public ICollection<ActorInMovieDTO> Actors { get; set; } = new List<ActorInMovieDTO>();
-
     }
 }

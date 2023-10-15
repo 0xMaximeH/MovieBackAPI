@@ -17,31 +17,44 @@ namespace MovieBackAPI.Controllers
 
 
         /// <summary>
-        /// Get the detail of one user (Id, Name, Favorites Movies, Reviews, Followers and following count)
+        /// Must be connected Get last 10 reviews of following
         /// </summary>
-        /// <param name="id">Id of the user</param>
+        [Authorize]
         [HttpGet]
-        [Route("{id:int}")]
-        public IActionResult GetFavoritesMovies([FromRoute] int id)
+        public IActionResult GetLastReviews()
         {
-            var user = dbContext.Users
-                .Select(u => new DetailUserDTO
-                {
-                    Id = u.Id,
-                    Name = u.Name,
-                    Reviews = u.Reviews,
-                    FavoriteMovies = u.FavoriteMovies
-                })
-                .FirstOrDefault(user => user.Id == id);
+            string userId = HttpContext.User.FindFirst("userId").Value;
+            var id = Convert.ToInt32(userId);
 
-            if (user == null)
+            var reviews = dbContext.Reviews
+                .Where(r => r.User.Followers
+                .Any(u => u.Id == id))
+                .Select(a => new
+                {
+                    a.Id,
+                    a.Rate,
+                    a.Comment,
+                    a.CreationDate,
+                    FollowingId = a.UserId,
+                    FollowingName = a.User.Name,
+                    MovieName = a.Movie.Title,
+                    a.MovieId
+                })
+                .OrderByDescending(e => e.CreationDate)
+                .Take(10)
+                .ToList();
+
+            if (reviews == null)
             {
-                return NotFound();
+                return NotFound("No reviews or no following found");
             }
 
-            return Ok(user);
+            return Ok(reviews);
         }
 
+        /// <summary>
+        /// Must be connected. Create a review of a movie with a rating and a comment.
+        /// </summary>
         [Authorize]
         [HttpPost]
         public IActionResult CreateReview([FromBody] ReviewDTO reviewDTO)
@@ -60,7 +73,8 @@ namespace MovieBackAPI.Controllers
                 UserId = id,
                 MovieId = reviewDTO.MovieId,
                 Rate = reviewDTO.Rate,
-                Comment = reviewDTO.Comment
+                Comment = reviewDTO.Comment,
+                CreationDate = DateTime.Now
             });
 
             dbContext.SaveChanges();

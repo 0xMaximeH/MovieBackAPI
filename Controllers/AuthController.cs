@@ -21,6 +21,9 @@ namespace MovieBackAPI.Controllers
             this.configuration = configuration; 
         }
 
+        /// <summary>
+        /// Create a user with a Name and a Password
+        /// </summary>
         [HttpPost]
         public IActionResult Register([FromBody] AddUserDTO user)
         {
@@ -38,6 +41,10 @@ namespace MovieBackAPI.Controllers
             return Ok(newUser);
         }
 
+        /// <summary>
+        /// Connect the user from his login and password and create a JWT token
+        /// </summary>
+        /// <returns>JWT token to be authentificate</returns>
         [HttpPost]
         public IActionResult Login([FromBody] UserDTO loginUser)
         {

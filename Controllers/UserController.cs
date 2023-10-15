@@ -1,7 +1,5 @@
-using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MovieBackAPI.Models;
 
 namespace MovieBackAPI.Controllers
@@ -11,14 +9,14 @@ namespace MovieBackAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly Context dbContext;
-        private readonly int pageResult = 1;
+        private readonly int pageResult = 5;
 
         public UserController(Context context)
         {
             this.dbContext = context;
         }
 
-        
+
         /// <summary>
         /// Returns 5 users per page (id, name, review count)
         /// </summary>
@@ -63,11 +61,23 @@ namespace MovieBackAPI.Controllers
 
             if (user == null) {
                 return NotFound(); 
-            } 
+            }
 
-            return Ok(user);
+            var userDto = new DetailUserDTO()
+            {
+                Name = user.Name,
+                Reviews = user.Reviews,
+                FavoriteMovies = user.FavoriteMovies,
+                FollowersCount = user.FollowersCount,
+                FollowingCount = user.FollowingCount
+
+            };
+            return Ok(userDto);
         }
 
+        /// <summary>
+        /// Must be connected. Add his favorite movies to his favorite movie list
+        /// </summary>
         [Authorize]
         [HttpPost]
         public IActionResult AddFavoriteMovies([FromBody] ChangeFavoiteMoviesDTO movies)
@@ -81,7 +91,7 @@ namespace MovieBackAPI.Controllers
                 return NotFound();
             }
 
-            user.FavoriteMovies = new List<Movie>(4);
+            user.FavoriteMovies.Clear();
 
             foreach (int movieId in movies.FavoriteMoviesIds)
             {
@@ -95,9 +105,13 @@ namespace MovieBackAPI.Controllers
 
             dbContext.SaveChanges();
 
-            return Ok(user);
+            return Ok();
         }
 
+        /// <summary>
+        /// Must be connected. Follow another User
+        /// </summary>
+        /// <param name="id">Id of the user</param>
         [Authorize]
         [HttpPost]
         [Route("{userId:int}")]
@@ -118,7 +132,7 @@ namespace MovieBackAPI.Controllers
 
             dbContext.SaveChanges();
 
-            return Ok();
+            return Ok(connectedUser.Following);
         }
     }
 }

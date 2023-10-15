@@ -15,10 +15,11 @@ namespace MovieBackAPI.Controllers
             this.dbContext = context;
         }
 
-        
+
         /// <summary>
         /// Returns the list of actors (Id, Name)
         /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -80,7 +81,7 @@ namespace MovieBackAPI.Controllers
         }
 
         /// <summary>
-        /// Create an actor with a name, a biography, dateOfBirth
+        /// Create an actor with a Name, a Biography and a DateOfBirth
         /// </summary>
         [HttpPost(Name = "AddActor")]
         public IActionResult Create([FromBody] AddActorDTO actor)
@@ -95,9 +96,12 @@ namespace MovieBackAPI.Controllers
             dbContext.Actors.Add(newActor);
             dbContext.SaveChanges();
 
-            return CreatedAtAction(nameof(GetById), new { id = newActor.Id }, newActor);
+            return CreatedAtAction(nameof(GetById), new { id = newActor.Id }, actor);
         }
 
+        /// <summary>
+        /// Update actor information (Name, Biography, DateOfBirth)
+        /// </summary>
         [HttpPut(Name = "UpdateActor")]
         public IActionResult Update([FromBody] UpdateActorDTO actor)
         {
@@ -116,22 +120,27 @@ namespace MovieBackAPI.Controllers
             dbContext.Actors.Update(updatedActor);
             dbContext.SaveChanges();
 
-            return CreatedAtAction(nameof(GetById), new { id = updatedActor.Id }, updatedActor);
+            return CreatedAtAction(nameof(GetById), new { id = updatedActor.Id }, actor);
         }
 
+        /// <summary>
+        /// Delete an actor
+        /// </summary>
+        /// <param name="id">Id of the the actor</param>
         [HttpDelete("{id:int}")]
         public IActionResult Delete([FromRoute] int id)
         {
             var actor = dbContext.Actors.Find(id);
 
-            if (actor == null) {
+            if (actor == null) 
+            {
                 return NotFound();
             }
 
             dbContext.Actors.Remove(actor);
             dbContext.SaveChanges();
 
-            return Ok($"The actor (id: {id}) has been deleted.");
+            return Ok("The actor has been deleted.");
         }
     }
 }

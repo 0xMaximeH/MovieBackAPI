@@ -73,6 +73,9 @@ namespace MovieBackAPI.Controllers
             return Ok(directorDto);
         }
 
+        /// <summary>
+        /// Create a director with a Name, a Biography and a DateOfBirth
+        /// </summary>
         [HttpPost(Name = "AddDirector")]
         public IActionResult Create([FromBody] AddDirectorDTO director)
         {
@@ -86,9 +89,12 @@ namespace MovieBackAPI.Controllers
             dbContext.Directors.Add(newDirector);
             dbContext.SaveChanges();
 
-            return CreatedAtAction(nameof(GetById), new { id = newDirector.Id }, newDirector);
+            return CreatedAtAction(nameof(GetById), new { id = newDirector.Id }, director);
         }
 
+        /// <summary>
+        /// Update director information (Name, Biography, DateOfBirth)
+        /// </summary>
         [HttpPut(Name = "UpdateDirector")]
         public IActionResult Update([FromBody] UpdateDirectorDTO director)
         {
@@ -105,9 +111,13 @@ namespace MovieBackAPI.Controllers
             dbContext.Directors.Update(updatedDirector);
 
             dbContext.SaveChanges();
-            return CreatedAtAction(nameof(GetById), new { id = updatedDirector.Id }, updatedDirector);
+            return CreatedAtAction(nameof(GetById), new { id = updatedDirector.Id }, director);
         }
 
+        /// <summary>
+        /// Delete an actor
+        /// </summary>
+        /// <param name="id">Id of the director</param>
         [HttpDelete("{id:int}")]
         public IActionResult Delete([FromRoute] int id)
         {
@@ -120,7 +130,7 @@ namespace MovieBackAPI.Controllers
             dbContext.Directors.Remove(director);
             dbContext.SaveChanges();
 
-            return Ok($"The director (id: {id}) has been deleted.");
+            return Ok("The director has been deleted.");
         }
     }
 }
