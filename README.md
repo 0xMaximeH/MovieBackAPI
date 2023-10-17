@@ -26,11 +26,3 @@ L'application possède 6 models :
 Certaines actions utilisateur nécessitent d'etre connecté en tant qu'utilisateur. Comme suivre un autre utilisateur ou écrire une review sur un film. 
 
 L'authentification se fait en se connectant via la fonction Loggin qui retourne un token Jwt. Via Swagger le token peut etre ajouter en haut de la page en rentrant : 'Bearer *leTokenARentrer*'
-
-## Disclaimer
-
-⚠️
-En dehors de l'authentification utilisateur, le reste de l'API n'est pas sécurisé.
-
-Je n'ai pas énormément testé l'application, il très certainement possible de provoquer des erreurs 500.
-Pas encore de test unitaires.
